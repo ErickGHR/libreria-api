@@ -1,0 +1,57 @@
+{
+  "info": {
+    "name": "Librería API",
+    "description": "Peticiones ordenadas para registrar un libro, prestar y devolverlo.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:8080" },
+    { "key": "bookIsbn", "value": "ISBN-PRUEBA" },
+    { "key": "userId", "value": "1" },
+    { "key": "loanId", "value": "1" }
+  ],
+  "item": [
+    {
+      "name": "1. Registrar libro",
+      "event": [{ "listen": "test", "script": { "exec": ["pm.test('Libro registrado', () => pm.expect(pm.response.code).to.eql(201));", "if (pm.response.code === 201) pm.collectionVariables.set('bookIsbn', pm.response.json().isbn);"] } }],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\n  \"isbn\": \"ISBN-{{$timestamp}}\",\n  \"titulo\": \"El principito\",\n  \"autor\": \"Antoine de Saint-Exupéry\",\n  \"anioPublicacion\": 1943,\n  \"totalEjemplares\": 3\n}" },
+        "url": "{{baseUrl}}/api/libros"
+      }
+    },
+    {
+      "name": "2. Registrar usuario",
+      "event": [{ "listen": "test", "script": { "exec": ["pm.test('Usuario registrado', () => pm.expect(pm.response.code).to.eql(201));", "if (pm.response.code === 201) pm.collectionVariables.set('userId', pm.response.json().id);"] } }],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\n  \"nombre\": \"María\",\n  \"apellidos\": \"González\",\n  \"correoElectronico\": \"maria{{$timestamp}}@example.com\",\n  \"contrasena\": \"Temporal123\",\n  \"rol\": \"SOCIO\",\n  \"estado\": \"ACTIVO\",\n  \"fechaNacimiento\": \"2000-05-10\",\n  \"telefono\": \"8112345678\",\n  \"direccion\": \"Calle Reforma 25\"\n}" },
+        "url": "{{baseUrl}}/api/usuarios"
+      }
+    },
+    {
+      "name": "3. Crear préstamo",
+      "event": [{ "listen": "test", "script": { "exec": ["pm.test('Préstamo creado', () => pm.expect(pm.response.code).to.eql(201));", "if (pm.response.code === 201) pm.collectionVariables.set('loanId', pm.response.json().id);"] } }],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\n  \"libro\": { \"isbn\": \"{{bookIsbn}}\" },\n  \"usuario\": { \"id\": {{userId}} }\n}" },
+        "url": "{{baseUrl}}/api/prestamos"
+      }
+    },
+    {
+      "name": "4. Consultar préstamos",
+      "request": { "method": "GET", "header": [], "url": "{{baseUrl}}/api/prestamos" }
+    },
+    {
+      "name": "5. Devolver libro",
+      "request": { "method": "PATCH", "header": [], "url": "{{baseUrl}}/api/prestamos/{{loanId}}/devolver" }
+    },
+    {
+      "name": "6. Consultar libro después de devolverlo",
+      "request": { "method": "GET", "header": [], "url": "{{baseUrl}}/api/libros/{{bookIsbn}}" }
+    }
+  ]
+}
